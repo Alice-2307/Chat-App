@@ -21,7 +21,7 @@ exports.signUpUser = async (req, res, next) => {
     } catch (err) {
         console.log(err);
         if (err.name === "SequelizeUniqueConstraintError") {
-            return res.status(403).json({ Error: "User already exist" })
+            return res.status(403).json({ Error: `User already exist, Please Login`})
         }
         res.status(500).json({ Error: 'An error occurred' });
     }

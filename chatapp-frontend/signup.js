@@ -5,7 +5,8 @@ const phonenumber = document.getElementById('phonenumber')
 const password = document.getElementById('password')
 const message = document.getElementById('message');
 
-signup.addEventListener('submit', (e) => {
+signup.addEventListener('submit', async (e) => {
+    try {
         e.preventDefault();
         const signupdata = {
             name: name.value,
@@ -13,5 +14,16 @@ signup.addEventListener('submit', (e) => {
             phonenumber: phonenumber.value,
             password: password.value,
         }
-        message.textContent = "Succesfully";
+        await axios.post("http://localhost:5000/signup", signupdata);
+        alert("Successfully signed up");
+
+    } catch (error) {
+        console.log(error);
+        if (error.response.status === 403 || error.response.status === 500) {
+            alert(`${error.response.data.Error}`);
+        }
+        else{
+            message.textContent = `Error: ${error.message}`
+        }
+    }
 })
