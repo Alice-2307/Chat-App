@@ -17,4 +17,5 @@ app.use('/user', userRoute);
 
 sequelize.sync().then(result => {
     app.listen(5000);
+    console.log("Listen Port 5000");
 }).catch(err => console.log(err));

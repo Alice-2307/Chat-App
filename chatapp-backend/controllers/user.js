@@ -1,5 +1,4 @@
 const userModel = require("../models/user")
-
 const bcrypt = require("bcrypt");
 
 exports.signUpUser = async (req, res, next) => {
@@ -18,7 +17,7 @@ exports.signUpUser = async (req, res, next) => {
         })
         console.log("User Added");
         res.status(201).json({ Message: 'User signup successfully' });
-        
+
     } catch (err) {
         console.log(err);
         if (err.name === "SequelizeUniqueConstraintError") {
