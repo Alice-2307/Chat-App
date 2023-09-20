@@ -9,11 +9,6 @@ exports.signUpUser = async (req, res, next) => {
         const phonenumber = req.body.phonenumber;
         const password = req.body.password;
 
-        console.log(name);
-        console.log(email);
-        console.log(phonenumber);
-        console.log(password);
-
         let hashPassword = await bcrypt.hash(password, 10)
         await userModel.create({
             name: name,
@@ -23,7 +18,7 @@ exports.signUpUser = async (req, res, next) => {
         })
         console.log("User Added");
         res.status(201).json({ Message: 'User signup successfully' });
-
+        
     } catch (err) {
         console.log(err);
         if (err.name === "SequelizeUniqueConstraintError") {
