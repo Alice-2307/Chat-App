@@ -18,7 +18,6 @@ signup.addEventListener('submit', async (e) => {
         alert("Successfully signed up");
 
     } catch (error) {
-        console.log(error);
         if (error.response!== undefined && (error.response.status === 403 || error.response.status === 500)) {
             alert(`${error.response.data.Error}`);
         }

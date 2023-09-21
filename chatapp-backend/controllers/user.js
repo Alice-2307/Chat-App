@@ -1,5 +1,6 @@
 const userModel = require("../models/user")
 const bcrypt = require("bcrypt");
+const jwt = require('jsonwebtoken');
 
 exports.signUpUser = async (req, res, next) => {
     try {
@@ -21,8 +22,32 @@ exports.signUpUser = async (req, res, next) => {
     } catch (err) {
         console.log(err);
         if (err.name === "SequelizeUniqueConstraintError") {
-            return res.status(403).json({ Error: `User already exist, Please Login`})
+            return res.status(403).json({ Error: `User already exist, Please Login` })
         }
+        res.status(500).json({ Error: 'An error occurred' });
+    }
+}
+
+exports.loginUser = async (req, res, next) => {
+    try {
+        const email = req.body.email;
+        const password = req.body.password;
+
+        const checkUser = await userModel.findOne({ where: { email: email } });
+
+        if (checkUser) {
+            const verifyPassword = await bcrypt.compare(password, checkUser.password);
+            if (verifyPassword === true) {
+                const jwtToken = jwt.sign({user: checkUser.id}, process.env.SECRET_KEY)
+                return res.status(200).json({Message: "User login successfully", token: jwtToken})
+            }
+            else {
+                return res.status(401).json({ Error: "User not authorized" })
+            }
+        }
+        return res.status(404).json({ Error: "User not found" });
+    } catch (err) {
+        console.log(err);
         res.status(500).json({ Error: 'An error occurred' });
     }
 }
