@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Chat App</title>
+    <style>
+        #chat {
+            position: fixed;
+            bottom: 1px;
+            left: 0;
+            width: 100%;
+            display: flex;
+            background-color: blueviolet;
+            justify-content: center;
+        }
+        input{
+            width: 40%;
+            padding: 4px
+        }
+    </style>
+</head>
+
+<body>
+    <h1 style="text-align: center;">Chat App</h1>
+    <div id="message-data">
+        <p>You joined</p>
+    </div>
+    <form id="chat">
+        <label for="message"></label>
+        <input type="text" id="message" placeholder="Type your message...">
+        <button>Send</button>
+    </form>
+    <script src="chat.js"></script>
+</body>
+
+</html>
