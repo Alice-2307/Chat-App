@@ -38,7 +38,7 @@ exports.loginUser = async (req, res, next) => {
         if (checkUser) {
             const verifyPassword = await bcrypt.compare(password, checkUser.password);
             if (verifyPassword === true) {
-                const jwtToken = jwt.sign({user: checkUser.id}, process.env.SECRET_KEY)
+                const jwtToken = jwt.sign({userId: checkUser.id}, process.env.SECRET_KEY)
                 return res.status(200).json({Message: "User login successfully", token: jwtToken})
             }
             else {

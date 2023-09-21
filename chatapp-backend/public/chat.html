@@ -19,6 +19,15 @@
             width: 40%;
             padding: 4px
         }
+        #message-data{
+            max-width: 18cm;
+            margin: auto;
+        }
+        p{
+            background-color: aqua;
+            padding: 4px;
+            margin: 10px;
+        }
     </style>
 </head>
 
@@ -32,6 +41,8 @@
         <input type="text" id="message" placeholder="Type your message...">
         <button>Send</button>
     </form>
+    <div id="message" style="color: red;"></div>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/axios/1.4.0/axios.min.js"></script>
     <script src="chat.js"></script>
 </body>
 

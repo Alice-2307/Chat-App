@@ -14,6 +14,7 @@ login.addEventListener("submit", async (e) => {
         const result = await axios.post("http://localhost:5000/login", logindata);
         document.cookie = `token=${result.data.token}`
         alert("Login successfully");
+        window.location.href = "./chat.html";
 
     } catch (error) {
         if (error.response !== undefined && (error.response.status === 401 || error.response.status === 404 || error.response.status === 500)) {
