@@ -26,10 +26,15 @@ chat.addEventListener("submit", async (e) => {
     }
 })
 
-window.addEventListener("DOMContentLoaded", async () => {
+window.addEventListener("DOMContentLoaded", () => {
+    loadMessage();
+})
+
+async function loadMessage() {
     try {
         const token = document.cookie.split("=")[1];
         const messageData = await axios.get("http://localhost:5000/message", { headers: { "Authorization": token } });
+        msgdetail.textContent = "";
         for (let i = 0; i < messageData.data.Message.length; i++) {
             showMessage(messageData.data.Message[i], loginUser);
         }
@@ -41,7 +46,7 @@ window.addEventListener("DOMContentLoaded", async () => {
             message.textContent = `Error: ${error.message}`
         }
     }
-})
+}
 
 function showMessage(msgVal, checkUser) {
     const subElement = document.createElement("p");
@@ -53,3 +58,5 @@ function showMessage(msgVal, checkUser) {
     }
     msgdetail.appendChild(subElement);
 }
+
+setInterval(loadMessage, 1000);
