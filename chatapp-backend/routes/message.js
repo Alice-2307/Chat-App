@@ -6,4 +6,6 @@ const router = express.Router();
 
 router.post('/message', userAuthorization, userController.userMessage)
 
+router.get('/message', userAuthorization, userController.getUserMessage)
+
 module.exports = router;
