@@ -13,7 +13,8 @@ const groupBtn = document.getElementById("create-group").addEventListener("click
                 name: groupName
             }
             const result = await axios.post("http://localhost:5000/groupname", grpName, { headers: { "Authorization": token } });
-            showGroup(result.data.Message);
+            console.log(result);
+            showGroup(result.data.Message, result.data.isAdmin);
         } catch (error) {
             showError(error)
         }
@@ -23,46 +24,49 @@ const groupBtn = document.getElementById("create-group").addEventListener("click
 window.addEventListener('DOMContentLoaded', async () => {
     try {
         const result = await axios.get("http://localhost:5000/groupname", { headers: { "Authorization": token } });
+        console.log(result);
         localStorage.setItem('group', "")
         for (let i = 0; i < result.data.Message.length; i++) {
-            showGroup(result.data.Message[i]);
+            showGroup(result.data.Message[i], result.data.Message[i].isAdmin);
         }
     } catch (error) {
         showError(error)
     }
+
 })
 
-function showGroup(result) {
+function showGroup(result, isAdmin) {
+    console.log(isAdmin);
     const save = result.name;
     const groupList = document.getElementById("group-list");
     const subElement = document.createElement("li");
 
     const grpnNamebtn = document.createElement("input");
-    const inviteBtn = document.createElement("input");
-
     grpnNamebtn.type = "button";
     grpnNamebtn.value = `${save}`;
     grpnNamebtn.style.backgroundColor = "none"
     grpnNamebtn.style.padding = "4px"
     grpnNamebtn.style.marginBottom = "8px"
 
-    inviteBtn.type = "button";
-    inviteBtn.value = "add user"
-    inviteBtn.style.marginLeft = "5px"
-    inviteBtn.style.backgroundColor = "blue"
-    inviteBtn.style.color = "white"
-
     grpnNamebtn.onclick = () => {
         localStorage.setItem('group', save)
+        localStorage.setItem('groupname', save);
         localStorage.setItem('message', JSON.stringify([]));
         loadMessage()
     };
-    inviteBtn.onclick = () => {
-        inviteUser(result);
-    }
-
     subElement.appendChild(grpnNamebtn);
-    subElement.appendChild(inviteBtn);
+    if (isAdmin === true) {
+        const inviteBtn = document.createElement("input");
+        inviteBtn.type = "button";
+        inviteBtn.value = "add user"
+        inviteBtn.style.marginLeft = "5px"
+        inviteBtn.style.backgroundColor = "blue"
+        inviteBtn.style.color = "white"
+        inviteBtn.onclick = () => {
+            inviteUser(result);
+        }
+        subElement.appendChild(inviteBtn);
+    }
     groupList.appendChild(subElement);
 }
 async function inviteUser(val) {
@@ -71,7 +75,7 @@ async function inviteUser(val) {
         if (userEmail) {
             const uI = ({
                 groupName: val.name,
-                userToInvite: userEmail
+                userToInvite: userEmail,
             })
             const result = await axios.post("http://localhost:5000/invite", uI, { headers: { "Authorization": token } });
             alert(result.data.Message)
@@ -83,7 +87,7 @@ async function inviteUser(val) {
 
 chat.addEventListener("submit", async (e) => {
     try {
-        const gpName = localStorage.getItem('group');
+        const gpName = localStorage.getItem('groupname');
         e.preventDefault()
         const msgData = {
             message: msg.value,
@@ -97,26 +101,94 @@ chat.addEventListener("submit", async (e) => {
     }
 })
 
-async function loadMessage() {
+
+let isOpen = false;
+async function loadMessage(res) {
     try {
-        const g = localStorage.getItem('group');
-        document.getElementById("group-name").textContent = `Group ${g}`
-        const checkLocal = JSON.parse(localStorage.getItem('message'))
+        const g = localStorage.getItem('groupname');
+        const groupName = document.getElementById("group-name");
+        groupName.textContent = `Group ${g}`;
+        const membersContainer = document.createElement("div");
+        groupName.appendChild(membersContainer);
+
+        const showGroupbtn = document.createElement("input");
+        showGroupbtn.type = "button";
+        showGroupbtn.value = `Group members`;
+        showGroupbtn.onclick = async () => {
+            showMembers(membersContainer, g)
+            msgdetail.textContent = "";
+        }
+        groupName.appendChild(showGroupbtn);
+
+        const checkLocal = JSON.parse(localStorage.getItem('message'));
         let lastMessageId;
+
         if (checkLocal.length === 0) {
             lastMessageId = 0;
-        }
-        else {
-            const lastMessage = checkLocal[checkLocal.length - 1]
-            lastMessageId = lastMessage.id
+        } else {
+            const lastMessage = checkLocal[checkLocal.length - 1];
+            lastMessageId = lastMessage.id;
         }
         const messageData = await axios.get(`http://localhost:5000/message?lastmessageid=${lastMessageId}&groupname=${g}`, { headers: { "Authorization": token } });
         storedLocal(messageData.data.Message);
-
     } catch (error) {
-        showError(error)
+        showError(error);
     }
 }
+
+async function showMembers(membersContainer, g) {
+    try {
+        if (!isOpen) {
+            const members = await axios.get(`http://localhost:5000/members?groupname=${g}`, { headers: { "Authorization": token } });
+            console.log(members);
+            localStorage.setItem('group', "")
+            const currentUserIsAdmin = members.data.Result;
+
+            for (let i = 0; i < members.data.Message.length; i++) {
+                const element = document.createElement("div");
+                const isAdmin = members.data.Message[i].isAdmin;
+
+                if (isAdmin) {
+                    element.textContent = `Admin: ${members.data.Message[i].name}`;
+                } else {
+                    element.textContent = members.data.Message[i].name;
+
+                    if (currentUserIsAdmin) {
+                        const makeAdminBtn = document.createElement("input");
+                        makeAdminBtn.type = "button";
+                        makeAdminBtn.value = `Make Admin`;
+                        makeAdminBtn.onclick = async () => {
+                            await axios.get(`http://localhost:5000/makeadmin?groupname=${g}&user=${members.data.Message[i].name}`, { headers: { "Authorization": token } });
+                            alert("user admin succesfully");
+                        }
+                        element.appendChild(makeAdminBtn);
+                        const deleteBtn = document.createElement("input");
+                        deleteBtn.type = "button";
+                        deleteBtn.value = `Delete user`;
+                        deleteBtn.onclick = async () => {
+                            const result = await axios.delete(`http://localhost:5000/deleteuser?groupname=${g}&user=${members.data.Message[i].name}`, { headers: { "Authorization": token } });
+                            alert(result.data.Message);
+                        }
+                        element.appendChild(deleteBtn);
+                    }
+
+                }
+                membersContainer.appendChild(element);
+            }
+            isOpen = true;
+        }
+        else {
+            const groupName = localStorage.getItem('groupname')
+            localStorage.setItem('group', groupName)
+            membersContainer.innerHTML = "";
+            isOpen = false;
+            showLocal();
+        }
+    } catch (error) {
+        showError(error);
+    }
+}
+
 
 function storedLocal(val) {
     const checkLocal = JSON.parse(localStorage.getItem('message'))

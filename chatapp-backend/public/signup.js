@@ -16,6 +16,7 @@ signup.addEventListener('submit', async (e) => {
         }
         await axios.post("http://localhost:5000/signup", signupdata);
         alert("Successfully signed up");
+        window.location.href = "./login.html";
 
     } catch (error) {
         if (error.response!== undefined && (error.response.status === 403 || error.response.status === 500)) {
