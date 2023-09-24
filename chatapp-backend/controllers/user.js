@@ -1,5 +1,4 @@
 const userModel = require("../models/user")
-const messageModel = require("../models/message");
 const bcrypt = require("bcrypt");
 const jwt = require('jsonwebtoken');
 
@@ -40,10 +39,6 @@ exports.loginUser = async (req, res, next) => {
             const verifyPassword = await bcrypt.compare(password, checkUser.password);
             if (verifyPassword === true) {
                 const jwtToken = jwt.sign({userId: checkUser.id}, process.env.SECRET_KEY)
-                await messageModel.create({
-                    message: 'joined',
-                    userId: checkUser.id
-                })
                 return res.status(200).json({Message: "User login successfully", token: jwtToken})
             }
             else {
