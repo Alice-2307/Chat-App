@@ -17,7 +17,7 @@ const userGroupModel = require("./models/userGroup");
 const app = express();
 
 app.use(cors({
-    origin: "http://localhost:5000/",
+    origin: "http://3.26.144.193:5000/",
 }));
 
 app.use(express.json());
@@ -45,5 +45,4 @@ groupModel.belongsToMany(userModel, { through: userGroupModel });
 
 sequelize.sync().then(result => {
     app.listen(5000);
-    console.log("Listen Port 5000");
 }).catch(err => console.log(err));

@@ -12,7 +12,7 @@ const groupBtn = document.getElementById("create-group").addEventListener("click
             const grpName = {
                 name: groupName
             }
-            const result = await axios.post("http://localhost:5000/groupname", grpName, { headers: { "Authorization": token } });
+            const result = await axios.post("http://3.26.144.193:5000/groupname", grpName, { headers: { "Authorization": token } });
             showGroup(result.data.Group, result.data.isAdmin);
         } catch (error) {
             showError(error)
@@ -22,7 +22,7 @@ const groupBtn = document.getElementById("create-group").addEventListener("click
 
 window.addEventListener('DOMContentLoaded', async () => {
     try {
-        const result = await axios.get("http://localhost:5000/groupname", { headers: { "Authorization": token } });
+        const result = await axios.get("http://3.26.144.193:5000/groupname", { headers: { "Authorization": token } });
         console.log(result);
         localStorage.setItem('groupname', "")
         localStorage.setItem('groupid', "")
@@ -77,7 +77,7 @@ async function inviteUser(val) {
                 groupId: val.id,
                 userToInvite: userEmail,
             })
-            const result = await axios.post("http://localhost:5000/invite", uI, { headers: { "Authorization": token } });
+            const result = await axios.post("http://3.26.144.193:5000/invite", uI, { headers: { "Authorization": token } });
             alert(result.data.Message)
         }
     } catch (error) {
@@ -94,7 +94,7 @@ chat.addEventListener("submit", async (e) => {
             message: msg.value,
             groupid: gId
         }
-        await axios.post("http://localhost:5000/message", msgData, { headers: { "Authorization": token } });
+        await axios.post("http://3.26.144.193:5000/message", msgData, { headers: { "Authorization": token } });
         msg.value = "";
         loadMessage();
     } catch (error) {
@@ -132,7 +132,7 @@ async function loadMessage() {
             const lastMessage = checkLocal[checkLocal.length - 1];
             lastMessageId = lastMessage.id;
         }
-        const messageData = await axios.get(`http://localhost:5000/message?lastmessageid=${lastMessageId}&groupid=${groupid}`, { headers: { "Authorization": token } });
+        const messageData = await axios.get(`http://3.26.144.193:5000/message?lastmessageid=${lastMessageId}&groupid=${groupid}`, { headers: { "Authorization": token } });
         storedLocal(messageData.data.Message);
         
     } catch (error) {
@@ -145,7 +145,7 @@ let isOpen = false;
 async function showMembers(membersContainer, groupid) {
     try {
         if (!isOpen) {
-            const members = await axios.get(`http://localhost:5000/members?groupid=${groupid}`, { headers: { "Authorization": token } });
+            const members = await axios.get(`http://3.26.144.193:5000/members?groupid=${groupid}`, { headers: { "Authorization": token } });
             console.log(members);
             localStorage.setItem('live', "")
             console.log(members.data.Members[0]);
@@ -166,7 +166,7 @@ async function showMembers(membersContainer, groupid) {
                         makeAdminBtn.type = "button";
                         makeAdminBtn.value = `Make Admin`;
                         makeAdminBtn.onclick = async () => {
-                            await axios.get(`http://localhost:5000/makeadmin?groupid=${groupid}&userid=${members.data.Members[i].id}`, { headers: { "Authorization": token } });
+                            await axios.get(`http://3.26.144.193:5000/makeadmin?groupid=${groupid}&userid=${members.data.Members[i].id}`, { headers: { "Authorization": token } });
                             alert("user admin succesfully");
                         }
                         element.appendChild(makeAdminBtn);
@@ -174,7 +174,7 @@ async function showMembers(membersContainer, groupid) {
                         deleteBtn.type = "button";
                         deleteBtn.value = `Delete user`;
                         deleteBtn.onclick = async () => {
-                            await axios.delete(`http://localhost:5000/deleteuser?groupid=${groupid}&userid=${members.data.Members[i].id}`, { headers: { "Authorization": token } });
+                            await axios.delete(`http://3.26.144.193:5000/deleteuser?groupid=${groupid}&userid=${members.data.Members[i].id}`, { headers: { "Authorization": token } });
                             alert("Delete user successfully");
                         }
                         element.appendChild(deleteBtn);

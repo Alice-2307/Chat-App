@@ -12,7 +12,7 @@ login.addEventListener("submit", async (e) => {
             password: password.value
         }
         localStorage.setItem('username',email.value)
-        const result = await axios.post("http://localhost:5000/login", logindata);
+        const result = await axios.post("http://3.26.144.193:5000/login", logindata);
         document.cookie = `token=${result.data.token}`
         alert("Login successfully");
         window.location.href = "./chat.html";

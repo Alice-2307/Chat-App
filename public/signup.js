@@ -14,7 +14,7 @@ signup.addEventListener('submit', async (e) => {
             phonenumber: phonenumber.value,
             password: password.value,
         }
-        await axios.post("http://localhost:5000/signup", signupdata);
+        await axios.post("http://3.26.144.193:5000/signup", signupdata);
         alert("Successfully signed up");
         window.location.href = "./login.html";
 
