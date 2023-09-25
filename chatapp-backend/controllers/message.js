@@ -7,11 +7,12 @@ const Sequelize = require("sequelize");
 exports.userMessage = async (req, res, next) => {
     try {
         const msg = req.body.message;
-        const groupId = await groupModel.findOne({where: {name: req.body.group}});
+        const groupId = req.body.groupid;
+        const group = await groupModel.findByPk(groupId);
         const data = await messageModel.create({
             message: msg,
             userId: req.user.id,
-            groupId: groupId.id
+            groupId: group.id
         })
         res.status(201).json({ Message: data });
     } catch (err) {
@@ -23,13 +24,14 @@ exports.userMessage = async (req, res, next) => {
 exports.getUserMessage = async (req, res, next) => {
     try {
         const lastMessage = +req.query.lastmessageid;
-        const grpName = req.query.groupname;
-        const groupId = await groupModel.findOne({where:{name:grpName}});
+        const groupId = req.query.groupid;
+        console.log(groupId);
+        const group = await groupModel.findByPk(groupId);
         let allMessage;
         if (lastMessage === 0) {
             allMessage = await messageModel.findAll({
                 where: {
-                    groupId: groupId.id
+                    groupId: group.id
                 },
                 include: [{ model: userModel, attributes: ['name', 'email'] }]
             });
@@ -37,7 +39,7 @@ exports.getUserMessage = async (req, res, next) => {
         else {
             allMessage = await messageModel.findAll({
                 where: {
-                        groupId: groupId.id,
+                        groupId: group.id,
                     id: {
                         [Sequelize.Op.gt]: lastMessage
                     }

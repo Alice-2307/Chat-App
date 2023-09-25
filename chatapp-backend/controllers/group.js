@@ -9,20 +9,19 @@ exports.addGroupName = async (req, res, next) => {
         const group = await groupModel.create({
             name: grpName,
         })
-        const groupid = await groupModel.findOne({ where: { name: grpName } });
         const userGroup = await userGroupModel.create({
             userId: req.user.id,
-            groupId: groupid.id,
+            groupId: group.id,
             admin: true
         })
 
         await messageModel.create({
             message: 'joined',
             userId: req.user.id,
-            groupId: groupid.id
+            groupId: group.id
         })
 
-        res.status(201).json({ Message: group, isAdmin: userGroup.admin });
+        res.status(201).json({ Group: group, isAdmin: userGroup.admin });
     } catch (err) {
         console.log(err);
         res.status(500).json({ Error: 'An error occurred' });
@@ -38,8 +37,9 @@ exports.getGroup = async (req, res, next) => {
         const groups = await user.getGroups();
 
         const groupNames = groups.map(async (group) => {
-            const checkAdmin = await userGroupModel.findOne({ where: { userId: userId } })
+            const checkAdmin = await userGroupModel.findOne({ where: { userId: userId, groupId:group.id} })
             return {
+                id: group.id,
                 name: group.name,
                 isAdmin: checkAdmin.admin
             }
@@ -55,10 +55,10 @@ exports.getGroup = async (req, res, next) => {
 
 exports.inviteUser = async (req, res, next) => {
     try {
-        const groupName = req.body.groupName;
+        const groupId = req.body.groupId;
         const userToInvite = req.body.userToInvite;
 
-        const group = await groupModel.findOne({ where: { name: groupName } });
+        const group = await groupModel.findByPk(groupId);
 
         const inviteUser = await userModel.findOne({ where: { email: userToInvite } });
         if (!inviteUser) {
@@ -88,22 +88,22 @@ exports.inviteUser = async (req, res, next) => {
 
 exports.groupMembers = async (req, res, next) => {
     try {
-        const groupName = req.query.groupname;
-        const groupId = await groupModel.findOne({ where: { name: groupName } })
-        if (groupId) {
-            const groupUser = await groupId.getUsers()
-            const checkAdmin = await userGroupModel.findOne({ where: { userId: req.user.id, groupId: groupId.id } })
-            console.log(checkAdmin);
-            const userGroupNames = groupUser.map(async (group) => {
-                const checkAdmin = await userGroupModel.findOne({ where: { userId: group.id, groupId: groupId.id } })
+        const groupId = req.query.groupid;
+        const group = await groupModel.findByPk(groupId)
+        if (group) {
+            const groupUser = await group.getUsers()
+            const checkAdmin = await userGroupModel.findOne({ where: { userId: req.user.id, groupId: group.id } })
+            const userGroupNames = groupUser.map(async (user) => {
+                const checkAdmin = await userGroupModel.findOne({ where: { userId: user.id, groupId: group.id } })
                 return {
-                    name: group.name,
+                    id: user.id,
+                    name: user.name,
                     isAdmin: checkAdmin.admin,
                 }
             })
             const members = await Promise.all(userGroupNames);
             if(checkAdmin.admin===true){
-            res.status(200).json({ Message: members, Result:true });
+            res.status(200).json({ Members: members, Result:true });
             }
             else{
                 res.status(200).json({ Message: members});
@@ -118,16 +118,16 @@ exports.groupMembers = async (req, res, next) => {
 
 exports.makeAdmin = async (req, res, next) => {
     try {
-        const user = req.query.user;
-        const group = req.query.groupname;
-        const userId = await userModel.findOne({ where: { name: user } })
-        const groupId = await groupModel.findOne({ where: { name: group } })
+        const userId = req.query.userid;
+        const groupId = req.query.groupid;
+        const user = await userModel.findByPk(userId);
+        const group = await groupModel.findByPk(groupId);
         await userGroupModel.update(
             { admin: true },
             {
                 where: {
-                    userId: userId.id,
-                    groupId: groupId.id
+                    userId: user.id,
+                    groupId: group.id
                 }
             }
         )
@@ -142,21 +142,21 @@ exports.makeAdmin = async (req, res, next) => {
 
 exports.deleteUser = async (req, res, next) => {
     try {
-        const user = req.query.user;
-        const group = req.query.groupname;
-        const userId = await userModel.findOne({ where: { name: user } })
-        const groupId = await groupModel.findOne({ where: { name: group } })
-        const deleteVal = await userGroupModel.findOne({ where: { userId: userId.id, groupId: groupId.id } })
+        const userId = req.query.userid;
+        const groupId = req.query.groupid;
+        const user = await userModel.findByPk(userId)
+        const group = await groupModel.findByPk(groupId)
+        const deleteVal = await userGroupModel.findOne({ where: { userId: user.id, groupId: group.id } })
         const deleteDone = await deleteVal.destroy()
         if(deleteDone){
             await messageModel.create({
                 message: 'removed',
-                userId: userId.id,
-                groupId: groupId.id
+                userId: user.id,
+                groupId: group.id
             })
         }
 
-        res.status(200).json({ Message: 'succesful' })
+        res.status(200).json({ Message: 'Done' })
     }
     catch (err) {
         console.log(err);
@@ -164,3 +164,4 @@ exports.deleteUser = async (req, res, next) => {
     }
 
 }
+
