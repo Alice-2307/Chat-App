@@ -16,9 +16,7 @@ const userGroupModel = require("./models/userGroup");
 
 const app = express();
 
-app.use(cors({
-    origin: "http://3.26.144.193:5000/",
-}));
+app.use(cors())
 
 app.use(express.json());
 
@@ -29,7 +27,7 @@ app.use('/', messageRoute)
 app.use('/', groupRoute)
 
 
-app.use((req,res)=> {
+app.use((req, res) => {
     res.sendFile(path.join(__dirname, `public/${req.url}`))
 })
 
@@ -44,5 +42,13 @@ groupModel.belongsToMany(userModel, { through: userGroupModel });
 
 
 sequelize.sync().then(result => {
-    app.listen(5000);
+    const server = app.listen(5000);
+    const io = require('socket.io')(server)
+    io.on('connection', socket => {
+        socket.on('send', message => {
+            socket.broadcast.emit('receive', message)
+        })
+    })
+
 }).catch(err => console.log(err));
+

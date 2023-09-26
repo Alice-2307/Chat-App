@@ -1,9 +1,13 @@
+const socket = io("http://localhost:5000") || io("http://3.26.144.193:5000");
 const chat = document.getElementById("chat");
 const msg = document.getElementById("message");
 const msgdetail = document.getElementById("message-data");
-const message = document.getElementById("message");
 const loginUser = localStorage.getItem('username');
 const token = document.cookie.split("=")[1];
+
+socket.on('receive', data => {
+    loadMessage();
+  })
 
 const groupBtn = document.getElementById("create-group").addEventListener("click", async () => {
     const groupName = prompt("Enter Your Group Name:");
@@ -26,14 +30,12 @@ window.addEventListener('DOMContentLoaded', async () => {
         console.log(result);
         localStorage.setItem('groupname', "")
         localStorage.setItem('groupid', "")
-        localStorage.setItem('live', "")
         for (let i = 0; i < result.data.Message.length; i++) {
             showGroup(result.data.Message[i], result.data.Message[i].isAdmin);
         }
     } catch (error) {
         showError(error)
     }
-
 })
 
 function showGroup(group, isAdmin) {
@@ -50,7 +52,6 @@ function showGroup(group, isAdmin) {
     grpnNamebtn.onclick = () => {
         localStorage.setItem('groupid', group.id)
         localStorage.setItem('groupname', group.name);
-        localStorage.setItem('live', group.name);
         localStorage.setItem('message', JSON.stringify([]));
         loadMessage()
     };
@@ -69,6 +70,7 @@ function showGroup(group, isAdmin) {
     }
     groupList.appendChild(subElement);
 }
+
 async function inviteUser(val) {
     try {
         const userEmail = prompt("Enter Your User Email:");
@@ -85,7 +87,6 @@ async function inviteUser(val) {
     }
 }
 
-
 chat.addEventListener("submit", async (e) => {
     try {
         const gId = localStorage.getItem('groupid');
@@ -95,6 +96,7 @@ chat.addEventListener("submit", async (e) => {
             groupid: gId
         }
         await axios.post("http://3.26.144.193:5000/message", msgData, { headers: { "Authorization": token } });
+        socket.emit('send',msgData.message);
         msg.value = "";
         loadMessage();
     } catch (error) {
@@ -102,14 +104,12 @@ chat.addEventListener("submit", async (e) => {
     }
 })
 
-
 async function loadMessage() {
     try {
         const groupName = document.getElementById("group-name");
         const groupname = localStorage.getItem('groupname')
         const groupid = localStorage.getItem('groupid');
         groupName.textContent = `Group ${groupname}`;
-       
        
         const membersContainer = document.createElement("div");
         groupName.appendChild(membersContainer);
@@ -119,7 +119,6 @@ async function loadMessage() {
         showGroupMembersbtn.value = `Group members`;
         showGroupMembersbtn.onclick = async () => {
             showMembers(membersContainer, groupid)
-            msgdetail.textContent = "";
         }
         groupName.appendChild(showGroupMembersbtn);
 
@@ -134,7 +133,7 @@ async function loadMessage() {
         }
         const messageData = await axios.get(`http://3.26.144.193:5000/message?lastmessageid=${lastMessageId}&groupid=${groupid}`, { headers: { "Authorization": token } });
         storedLocal(messageData.data.Message);
-        
+
     } catch (error) {
         showError(error);
     }
@@ -145,14 +144,10 @@ let isOpen = false;
 async function showMembers(membersContainer, groupid) {
     try {
         if (!isOpen) {
-            const members = await axios.get(`http://3.26.144.193:5000/members?groupid=${groupid}`, { headers: { "Authorization": token } });
-            console.log(members);
-            localStorage.setItem('live', "")
-            console.log(members.data.Members[0]);
+            const members = await axios.get(`http://3.26.144.193:5000/members?groupid=${groupid}`, { headers: { "Authorization": token } });  
             const currentUserIsAdmin = members.data.Result;
 
             for (let i = 0; i < members.data.Members.length; i++) {
-                console.log("hy");
                 const element = document.createElement("div");
                 const isAdmin = members.data.Members[i].isAdmin;
 
@@ -179,7 +174,6 @@ async function showMembers(membersContainer, groupid) {
                         }
                         element.appendChild(deleteBtn);
                     }
-
                 }
                 membersContainer.appendChild(element);
             }
@@ -187,7 +181,6 @@ async function showMembers(membersContainer, groupid) {
         }
         else {
             const groupName = localStorage.getItem('groupname')
-            localStorage.setItem('live', groupName)
             membersContainer.innerHTML = "";
             isOpen = false;
             showLocal();
@@ -197,14 +190,12 @@ async function showMembers(membersContainer, groupid) {
     }
 }
 
-
 function storedLocal(val) {
     const checkLocal = JSON.parse(localStorage.getItem('message'))
 
     for (let i = 0; i < val.length; i++) {
         checkLocal.push({ id: val[i].id, message: val[i].message, sender: val[i].sender, username: val[i].username })
         localStorage.setItem('message', JSON.stringify(checkLocal))
-        console.log(checkLocal.length)
     }
     showLocal();
 }
@@ -249,9 +240,3 @@ function showError(error) {
         alert(`Error: ${error.message}`);
     }
 }
-
-// setInterval(() => {
-//     if (localStorage.getItem('live') !== "") {
-//         loadMessage();
-//     }
-// }, 1000);

@@ -106,7 +106,8 @@ exports.groupMembers = async (req, res, next) => {
             res.status(200).json({ Members: members, Result:true });
             }
             else{
-                res.status(200).json({ Message: members});
+                console.log('else');
+                res.status(200).json({ Members: members});
             }
         }
     }
