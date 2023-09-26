@@ -15,35 +15,43 @@
             background-color: blueviolet;
             justify-content: center;
         }
-        #message{
+
+        #message {
             width: 40%;
             padding: 4px
         }
-        #message-data{
+
+        #message-data {
             max-width: 18cm;
             margin: auto;
         }
-        p{
+
+        p {
             background-color: aqua;
             padding: 4px;
             margin: 10px;
+        }
+        a{
+            color: darkorchid;
+            text-decoration: none;
         }
     </style>
 </head>
 
 <body>
     <h1 style="text-align: center;">Chat App</h1>
-        <h2>Your Groups</h2>
-        <button id="create-group">Create Group</button>
-        <ul id="group-list" style="list-style: none;">
-        </ul>
-        <h3 id="group-name" style="text-align: center;"></h3>
+    <h2>Your Groups</h2>
+    <button id="create-group">Create Group</button>
+    <ul id="group-list" style="list-style: none;">
+    </ul>
+    <h3 id="group-name" style="text-align: center;"></h3>
     </div>
     <div id="message-data">
     </div>
     <form id="chat">
         <label for="message"></label>
         <input type="text" id="message" placeholder="Type your message...">
+        <input type="file" id="fileInput">
         <button>Send</button>
     </form>
     <div id="message" style="color: red;"></div>

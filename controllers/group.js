@@ -2,6 +2,7 @@ const groupModel = require("../models/group");
 const userGroupModel = require("../models/userGroup");
 const userModel = require("../models/user");
 const messageModel = require("../models/message");
+const S3Service = require("../services/s3service");
 
 exports.addGroupName = async (req, res, next) => {
     try {
@@ -37,7 +38,7 @@ exports.getGroup = async (req, res, next) => {
         const groups = await user.getGroups();
 
         const groupNames = groups.map(async (group) => {
-            const checkAdmin = await userGroupModel.findOne({ where: { userId: userId, groupId:group.id} })
+            const checkAdmin = await userGroupModel.findOne({ where: { userId: userId, groupId: group.id } })
             return {
                 id: group.id,
                 name: group.name,
@@ -102,12 +103,12 @@ exports.groupMembers = async (req, res, next) => {
                 }
             })
             const members = await Promise.all(userGroupNames);
-            if(checkAdmin.admin===true){
-            res.status(200).json({ Members: members, Result:true });
+            if (checkAdmin.admin === true) {
+                res.status(200).json({ Members: members, Result: true });
             }
-            else{
+            else {
                 console.log('else');
-                res.status(200).json({ Members: members});
+                res.status(200).json({ Members: members });
             }
         }
     }
@@ -149,7 +150,7 @@ exports.deleteUser = async (req, res, next) => {
         const group = await groupModel.findByPk(groupId)
         const deleteVal = await userGroupModel.findOne({ where: { userId: user.id, groupId: group.id } })
         const deleteDone = await deleteVal.destroy()
-        if(deleteDone){
+        if (deleteDone) {
             await messageModel.create({
                 message: 'removed',
                 userId: user.id,
@@ -166,3 +167,23 @@ exports.deleteUser = async (req, res, next) => {
 
 }
 
+exports.uploadFile = async (req, res) => {
+    try{
+        const file = req.file;
+        const date = new Date().getTime();
+        const groupId = req.body.groupId;
+        const fileName = `groups/${groupId}/${file.originalname}/${date}`
+        const fileUrl = await S3Service.uploadtoS3(file, fileName);
+        const split = fileUrl.split('/')
+        const message = await messageModel.create({
+            message: `<a href=${fileUrl}>Download-${split[5]}</a>`,
+            userId: req.user.id,
+            groupId: groupId
+        })
+        res.status(200).json({Message: message.message});
+    }
+    catch (err) {
+        console.log(err);
+        res.status(500).json({ Error: 'An error occurred' });
+    }
+};

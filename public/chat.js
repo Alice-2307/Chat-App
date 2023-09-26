@@ -2,12 +2,13 @@ const socket = io("http://localhost:5000") || io("http://3.26.144.193:5000");
 const chat = document.getElementById("chat");
 const msg = document.getElementById("message");
 const msgdetail = document.getElementById("message-data");
+const fileInput = document.getElementById('fileInput');
 const loginUser = localStorage.getItem('username');
 const token = document.cookie.split("=")[1];
 
 socket.on('receive', data => {
     loadMessage();
-  })
+})
 
 const groupBtn = document.getElementById("create-group").addEventListener("click", async () => {
     const groupName = prompt("Enter Your Group Name:");
@@ -27,7 +28,6 @@ const groupBtn = document.getElementById("create-group").addEventListener("click
 window.addEventListener('DOMContentLoaded', async () => {
     try {
         const result = await axios.get("http://3.26.144.193:5000/groupname", { headers: { "Authorization": token } });
-        console.log(result);
         localStorage.setItem('groupname', "")
         localStorage.setItem('groupid', "")
         for (let i = 0; i < result.data.Message.length; i++) {
@@ -89,16 +89,28 @@ async function inviteUser(val) {
 
 chat.addEventListener("submit", async (e) => {
     try {
-        const gId = localStorage.getItem('groupid');
         e.preventDefault()
+        const gId = localStorage.getItem('groupid');
+        const file = fileInput.files[0];
+        if (file) {
+            const formData = new FormData();
+            formData.append("file", file);
+            formData.append("groupId", gId);
+            const result = await axios.post('http://3.26.144.193:5000/upload', formData, { headers: { 'Authorization': token, 'Content-Type': 'multipart/form-data' } });
+            fileInput.value = "";
+            socket.emit('send', result.data.Message);
+            loadMessage();
+        }
+        else{
         const msgData = {
             message: msg.value,
             groupid: gId
         }
         await axios.post("http://3.26.144.193:5000/message", msgData, { headers: { "Authorization": token } });
-        socket.emit('send',msgData.message);
+        socket.emit('send', msgData.message);
         msg.value = "";
         loadMessage();
+    }
     } catch (error) {
         showError(error)
     }
@@ -223,10 +235,10 @@ function showMessage(msgVal) {
         }
     }
     else if (msgVal.username === loginUser) {
-        subElement.textContent = `You: ${msgVal.message}`;
+        subElement.innerHTML = `You: ${msgVal.message}`;
     }
     else {
-        subElement.textContent = `${msgVal.sender}: ${msgVal.message}`;
+        subElement.innerHTML = `${msgVal.sender}: ${msgVal.message}`;
     }
     msgdetail.appendChild(subElement);
 
