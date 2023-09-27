@@ -24,8 +24,7 @@ exports.addGroupName = async (req, res, next) => {
 
         res.status(201).json({ Group: group, isAdmin: userGroup.admin });
     } catch (err) {
-        console.log(err);
-        res.status(500).json({ Error: 'An error occurred' });
+        showError(err,res)
     }
 }
 
@@ -49,12 +48,11 @@ exports.getGroup = async (req, res, next) => {
 
         res.status(201).json({ Message: result });
     } catch (err) {
-        console.log(err);
-        res.status(500).json({ Error: 'An error occurred' });
+        showError(err,res)
     }
 }
 
-exports.inviteUser = async (req, res, next) => {
+exports.inviteUser = async (req, res) => {
     try {
         const groupId = req.body.groupId;
         const userToInvite = req.body.userToInvite;
@@ -81,13 +79,11 @@ exports.inviteUser = async (req, res, next) => {
             res.status(201).json({ Message: 'succesfully added' });
         }
     } catch (err) {
-        console.log(err);
-        res.status(500).json({ Error: 'An error occurred' });
+        showError(err,res)
     }
-
 }
 
-exports.groupMembers = async (req, res, next) => {
+exports.groupMembers = async (req, res) => {
     try {
         const groupId = req.query.groupid;
         const group = await groupModel.findByPk(groupId)
@@ -107,18 +103,16 @@ exports.groupMembers = async (req, res, next) => {
                 res.status(200).json({ Members: members, Result: true });
             }
             else {
-                console.log('else');
                 res.status(200).json({ Members: members });
             }
         }
     }
     catch (err) {
-        console.log(err);
-        res.status(500).json({ Error: 'An error occurred' });
+        showError(err,res)
     }
 }
 
-exports.makeAdmin = async (req, res, next) => {
+exports.makeAdmin = async (req, res) => {
     try {
         const userId = req.query.userid;
         const groupId = req.query.groupid;
@@ -137,12 +131,11 @@ exports.makeAdmin = async (req, res, next) => {
         res.status(200).json({ Message: "Done" })
     }
     catch (err) {
-        console.log(err);
-        res.status(500).json({ Error: 'An error occurred' });
+        showError(err,res)
     }
 }
 
-exports.deleteUser = async (req, res, next) => {
+exports.deleteUser = async (req, res) => {
     try {
         const userId = req.query.userid;
         const groupId = req.query.groupid;
@@ -161,14 +154,13 @@ exports.deleteUser = async (req, res, next) => {
         res.status(200).json({ Message: 'Done' })
     }
     catch (err) {
-        console.log(err);
-        res.status(500).json({ Error: 'An error occurred' });
+        showError(err,res)
     }
 
 }
 
 exports.uploadFile = async (req, res) => {
-    try{
+    try {
         const file = req.file;
         const date = new Date().getTime();
         const groupId = req.body.groupId;
@@ -180,10 +172,14 @@ exports.uploadFile = async (req, res) => {
             userId: req.user.id,
             groupId: groupId
         })
-        res.status(200).json({Message: message.message});
+        res.status(200).json({ Message: message.message });
     }
     catch (err) {
-        console.log(err);
-        res.status(500).json({ Error: 'An error occurred' });
+        showError(err,res)
     }
 };
+
+function showError(err,res) {
+    console.log(err);
+    res.status(500).json({ Error: 'An error occurred' })
+}

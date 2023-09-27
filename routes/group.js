@@ -9,17 +9,11 @@ const upload = multer({ storage: storage });
 const router = express.Router();
 
 router.post('/groupname', userAuthorization, groupController.addGroupName)
-
-router.get('/groupname', userAuthorization, groupController.getGroup)
-
 router.post('/invite', userAuthorization, groupController.inviteUser)
-
 router.post('/upload', upload.single('file'), userAuthorization, groupController.uploadFile);
-
+router.get('/groupname', userAuthorization, groupController.getGroup)
 router.get('/members', userAuthorization, groupController.groupMembers)
-
 router.get('/makeadmin', userAuthorization, groupController.makeAdmin)
-
 router.delete('/deleteuser', userAuthorization, groupController.deleteUser)
 
 
